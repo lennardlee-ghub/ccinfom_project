@@ -117,7 +117,7 @@
                                 <div class="d-flex" style="width:80%;margin-top:20px">
                                     <div style="font-family:arial;font-size:25px">
                                         Infrastructure Record, 2, ESCANDOR "GITHUB LOWKEY GOATED CHAT THERE'S LEVEL TO TS"333
-                                        
+                                        IDHASIODHSAOIJDHASOIDHASOJNGLKNGLASKNGaLKN
                                     </div>
 
                                     <button class="btn btn-primary" style="margin-left:auto">
