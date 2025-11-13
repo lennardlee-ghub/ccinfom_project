@@ -116,7 +116,7 @@
                             <div style="width:100%;display:flex;justify-content:center;flex-direction:column">
                                 <div class="d-flex" style="width:80%;margin-top:20px">
                                     <div style="font-family:arial;font-size:25px">
-                                        Infrastructure Record
+                                        Infrastructure Record, 2
                                     </div>
 
                                     <button class="btn btn-primary" style="margin-left:auto">
