@@ -44,57 +44,9 @@
                     Connection con = DriverManager.getConnection(
                         "jdbc:mysql://localhost:3307/ccinfom_project",
                         "root",
-                        ""  // No password
+                        "ccinfomgoat9"  // No password
                     );
                     out.println("<p style='color:green;'>✓ SUCCESS with EMPTY password!</p>");
-                    con.close();
-                } catch(Exception e) {
-                    out.println("<p style='color:red;'>✗ Failed: " + e.getMessage() + "</p>");
-                }
-            %>
-            
-            <h2>Test 2: Password = root</h2>
-            <%
-                try {
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3307/ccinfom_project",
-                        "root",
-                        "root"
-                    );
-                    out.println("<p style='color:green;'>✓ SUCCESS with password 'root'!</p>");
-                    con.close();
-                } catch(Exception e) {
-                    out.println("<p style='color:red;'>✗ Failed: " + e.getMessage() + "</p>");
-                }
-            %>
-            
-            <h2>Test 3: Password = p@assw0rd</h2>
-            <%
-                try {
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3307/ccinfom_project",
-                        "root",
-                        "p@assw0rd"
-                    );
-                    out.println("<p style='color:green;'>✓ SUCCESS with password 'p@assw0rd'!</p>");
-                    con.close();
-                } catch(Exception e) {
-                    out.println("<p style='color:red;'>✗ Failed: " + e.getMessage() + "</p>");
-                }
-            %>
-        
-            <h2>Test 4: Port 3306 (default MySQL)</h2>
-            <%
-                try {
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/ccinfom_project",
-                        "root",
-                        "p@ssword"
-                    );
-                    out.println("<p style='color:green;'>✓ SUCCESS on port 3306!</p>");
                     con.close();
                 } catch(Exception e) {
                     out.println("<p style='color:red;'>✗ Failed: " + e.getMessage() + "</p>");
