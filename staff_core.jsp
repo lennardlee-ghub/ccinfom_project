@@ -1,5 +1,4 @@
-  
-    <%@page import="java.sql.*" %>
+<%@page import="java.sql.*" %>
 
     <% 
         // Global variables for editing
@@ -36,6 +35,7 @@
             pst.setString(4, staff_contact_number_add);
             pst.setString(5, availability_add);
             pst.executeUpdate();
+            response.sendRedirect("staff_core.jsp");
         }
         else if("getEdit".equals(action)){
             // Getting the stf_id
@@ -93,6 +93,7 @@
             pst.setString(5, availability);
             pst.setInt(6, stf_id);
             pst.executeUpdate();
+            response.sendRedirect("staff_core.jsp");
         } else if("delete".equals(action)){
             // Get stf_id for deletion
             int stf_id = Integer.parseInt(request.getParameter("stf_id"));
@@ -106,6 +107,7 @@
             pst = con.prepareStatement("DELETE FROM staff_core WHERE stf_id=?");
             pst.setInt(1, stf_id);
             pst.executeUpdate();
+            response.sendRedirect("staff_core.jsp");
         }
     %>
 
@@ -215,7 +217,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="staff_core.jsp" method="GET">
+                    <form action="staff_core.jsp" method="POST">
                         <input type="hidden" name="action" value="insert">
                         <div class="mb-3">
                             <label for="staff_fname_add" class="form-label">First Name</label>
@@ -256,7 +258,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="staff_core.jsp" method="GET">
+                    <form action="staff_core.jsp" method="POST">
                         <input type="hidden" name="action" value="submitEdit">
                         <input type="hidden" name="stf_id_edit" value="<%= stf_id_edit %>">
                         <div class="mb-3">
