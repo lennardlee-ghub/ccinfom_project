@@ -1,4 +1,5 @@
-<%@page import="java.sql.*" %>
+    
+    <%@page import="java.sql.*" %>
 
     <% 
 
@@ -14,10 +15,11 @@
         String action = request.getParameter("action");
 
         if("insert".equals(action)){
+
             //modal insert variables
             String location_add = request.getParameter("location_add"); 
-            String status_add = request.getParameter("status_add");
             String type_of_building_add = request.getParameter("type_of_building_add");
+            String status_add = request.getParameter("status_add");
 
             //connection
             Connection con;
@@ -25,14 +27,15 @@
             ResultSet rs; 
 
             //insert statement
+
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-            pst = con.prepareStatement("insert into infrastructure_core(location,status,type_of_building)values(?,?,?)");
+            pst = con.prepareStatement("INSERT INTO infrastructure_core(location, type_of_infra, status) VALUES(?,?,?)");
             pst.setString(1, location_add);
-            pst.setString(2, status_add);
-            pst.setString(3, type_of_building_add);
+            pst.setString(2, type_of_building_add);
+            pst.setString(3, status_add);
             pst.executeUpdate();
-            response.sendRedirect("infrastructure_core.jsp");
+
         }
         else if("getEdit".equals(action)){
 
@@ -101,7 +104,6 @@
             pst.setString(3, status_edit);
             pst.setInt(4, inf_id_hidden);
             pst.executeUpdate();
-            response.sendRedirect("infrastructure_core.jsp");
 
             %>
 
@@ -117,19 +119,21 @@
         }  
         
         else if("delete".equals(action)){
-            //get inf_id for deletion
-            int inf_id = Integer.parseInt(request.getParameter("inf_id"));
 
             //connection
             Connection con;
             PreparedStatement pst;
+            ResultSet rs;
 
+            String inf_id_delete_str = request.getParameter("inf_id");
+            //parsing to int
+            int inf_id_delete = Integer.parseInt(inf_id_delete_str);
+ 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-            pst = con.prepareStatement("delete from infrastructure_core where inf_id=?");
-            pst.setInt(1, inf_id);
+            pst = con.prepareStatement("DELETE FROM infrastructure_core WHERE inf_id=?");
+            pst.setInt(1, inf_id_delete);
             pst.executeUpdate();
-            response.sendRedirect("infrastructure_core.jsp");
         }
     %>
     <html style="overflow:hidden">
@@ -246,13 +250,12 @@
                         <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form action="infrastructure_core.jsp" method="POST">
-                                        <input type="hidden" name="action" value="insert">
+                                    <form>
                                         <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="addModalLabel">Add Infrastructure Record</h1>
+                                        <h5 class="modal-title" id="exampleModalLabel">Add infrastructure</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                      </div>
-                                      <div class="modal-body">
+                                        </div>
+                                        <div class="modal-body">
                                         
                                             <div class="mb-3">
                                             <label for="recipient-name" class="col-form-label">Location:</label>
@@ -290,11 +293,9 @@
                         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form action="infrastructure_core.jsp" method="POST">
-                                        <input type="hidden" name="action" value="submitEdit">
-                                        <input type="hidden" name="inf_id_edit" value="<%= inf_id_edit %>">
+                                    <form>
                                         <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="editModalLabel">Edit Infrastructure Record</h1>
+                                            <h5 class="modal-title" id="exampleModalLabel">Edit infrastructure</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
