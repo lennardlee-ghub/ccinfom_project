@@ -7,8 +7,7 @@
         String date_start_edit = "";
         String date_end_edit = "";
         String status_edit = "";
-        int stf_id_edit = 0;
-        int inf_id_edit = 0;
+        int dri_id_edit = 0;
 
         // For inserting a record logic
         String action = request.getParameter("action");
@@ -18,11 +17,9 @@
             String date_start_add = request.getParameter("date_start_add"); 
             String date_end_add = request.getParameter("date_end_add");
             String status_add = request.getParameter("status_add");
-            String stf_id_add_str = request.getParameter("stf_id_add");
-            String inf_id_add_str = request.getParameter("inf_id_add");
+            String dri_id_add_str = request.getParameter("dri_id_add");
             
-            int stf_id_add = Integer.parseInt(stf_id_add_str);
-            int inf_id_add = Integer.parseInt(inf_id_add_str);
+            int dri_id_add = Integer.parseInt(dri_id_add_str);
 
             // Connection
             Connection con;
@@ -31,13 +28,24 @@
             // Insert statement
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-            pst = con.prepareStatement("INSERT INTO damage_repair(date_start, date_end, status, stf_id, inf_id) VALUES(?,?,?,?,?)");
+            pst = con.prepareStatement("INSERT INTO damage_repair(date_start, date_end, status, dri_id) VALUES(?,?,?,?)");
             pst.setString(1, date_start_add);
             pst.setString(2, date_end_add);
             pst.setString(3, status_add);
-            pst.setInt(4, stf_id_add);
-            pst.setInt(5, inf_id_add);
+            pst.setInt(4, dri_id_add);
             pst.executeUpdate();
+            
+            // Update staff availability based on status
+            if("For Repair".equals(status_add) || "Repairing".equals(status_add)){
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id_add);
+                pst.executeUpdate();
+            } else if("Repaired".equals(status_add)){
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id_add);
+                pst.executeUpdate();
+            }
+            
             con.close();
             response.sendRedirect("damage_repair.jsp");
         }
@@ -63,8 +71,7 @@
                 date_start_edit = rs.getString("date_start");
                 date_end_edit = rs.getString("date_end");
                 status_edit = rs.getString("status");
-                stf_id_edit = rs.getInt("stf_id");
-                inf_id_edit = rs.getInt("inf_id");
+                dri_id_edit = rs.getInt("dri_id");
             }
             con.close();
             %>
@@ -81,8 +88,7 @@
             String date_start = request.getParameter("date_start_edit");
             String date_end = request.getParameter("date_end_edit");
             String status = request.getParameter("status_edit");
-            int stf_id = Integer.parseInt(request.getParameter("stf_id_edit"));
-            int inf_id = Integer.parseInt(request.getParameter("inf_id_edit"));
+            int dri_id = Integer.parseInt(request.getParameter("dri_id_edit"));
 
             // Connection
             Connection con;
@@ -90,14 +96,25 @@
 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-            pst = con.prepareStatement("UPDATE damage_repair SET date_start=?, date_end=?, status=?, stf_id=?, inf_id=? WHERE dr_id=?");
+            pst = con.prepareStatement("UPDATE damage_repair SET date_start=?, date_end=?, status=?, dri_id=? WHERE dr_id=?");
             pst.setString(1, date_start);
             pst.setString(2, date_end);
             pst.setString(3, status);
-            pst.setInt(4, stf_id);
-            pst.setInt(5, inf_id);
-            pst.setInt(6, dr_id);
+            pst.setInt(4, dri_id);
+            pst.setInt(5, dr_id);
             pst.executeUpdate();
+            
+            // Update staff availability based on status
+            if("For Repair".equals(status) || "Repairing".equals(status)){
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id);
+                pst.executeUpdate();
+            } else if("Repaired".equals(status)){
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id);
+                pst.executeUpdate();
+            }
+            
             con.close();
             response.sendRedirect("damage_repair.jsp");
         } else if("delete".equals(action)){
@@ -182,8 +199,9 @@
                                                               "i.location AS infrastructure, " +
                                                               "CONCAT(s.staff_fname, ' ', s.staff_lname) AS staff_name " +
                                                               "FROM damage_repair dr " +
-                                                              "JOIN infrastructure_core i ON dr.inf_id = i.inf_id " +
-                                                              "JOIN staff_core s ON dr.stf_id = s.stf_id " +
+                                                              "LEFT JOIN damage_recording_infra dri ON dr.dri_id = dri.dri_id " +
+                                                              "LEFT JOIN infrastructure_core i ON dri.inf_id = i.inf_id " +
+                                                              "LEFT JOIN staff_core s ON dri.stf_id = s.stf_id " +
                                                               "ORDER BY dr.dr_id DESC";
                                                 Statement st = con.createStatement();
                                                 rs = st.executeQuery(query);
@@ -244,9 +262,9 @@
                     <form action="damage_repair.jsp" method="POST">
                         <input type="hidden" name="action" value="insert">
                         <div class="mb-3">
-                            <label for="inf_id_add" class="form-label">Infrastructure</label>
-                            <select class="form-select" id="inf_id_add" name="inf_id_add" required>
-                                <option value="">Select Infrastructure</option>
+                            <label for="dri_id_add" class="form-label">Damage Record</label>
+                            <select class="form-select" id="dri_id_add" name="dri_id_add" required>
+                                <option value="">Select Damage Record</option>
                                 <%
                                     Connection con2;
                                     Statement st2;
@@ -255,11 +273,16 @@
                                     Class.forName("com.mysql.jdbc.Driver");
                                     con2 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
                                     st2 = con2.createStatement();
-                                    rs2 = st2.executeQuery("SELECT inf_id, location FROM infrastructure_core ORDER BY location");
+                                    rs2 = st2.executeQuery("SELECT dri.dri_id, i.location, dri.damage_details " +
+                                                          "FROM damage_recording_infra dri " +
+                                                          "LEFT JOIN infrastructure_core i ON dri.inf_id = i.inf_id " +
+                                                          "ORDER BY dri.dri_id DESC");
                                     
                                     while(rs2.next()){
                                 %>
-                                    <option value="<%= rs2.getInt("inf_id") %>"><%= rs2.getString("location") %></option>
+                                    <option value="<%= rs2.getInt("dri_id") %>">
+                                        #<%= rs2.getInt("dri_id") %> - <%= rs2.getString("location") %> - <%= rs2.getString("damage_details") %>
+                                    </option>
                                 <%
                                     }
                                     con2.close();
@@ -272,29 +295,6 @@
                                 <option value="For Repair">For Repair</option>
                                 <option value="Repairing">Repairing</option>
                                 <option value="Repaired">Repaired</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="stf_id_add" class="form-label">Assigned Staff</label>
-                            <select class="form-select" id="stf_id_add" name="stf_id_add" required>
-                                <option value="">Select Staff</option>
-                                <%
-                                    Connection con3;
-                                    Statement st3;
-                                    ResultSet rs3;
-                                    
-                                    Class.forName("com.mysql.jdbc.Driver");
-                                    con3 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                                    st3 = con3.createStatement();
-                                    rs3 = st3.executeQuery("SELECT stf_id, staff_fname, staff_lname FROM staff_core ORDER BY staff_lname");
-                                    
-                                    while(rs3.next()){
-                                %>
-                                    <option value="<%= rs3.getInt("stf_id") %>"><%= rs3.getString("staff_fname") + " " + rs3.getString("staff_lname") %></option>
-                                <%
-                                    }
-                                    con3.close();
-                                %>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -325,8 +325,8 @@
                         <input type="hidden" name="action" value="submitEdit">
                         <input type="hidden" name="dr_id_edit" value="<%= dr_id_edit %>">
                         <div class="mb-3">
-                            <label for="inf_id_edit" class="form-label">Infrastructure</label>
-                            <select class="form-select" id="inf_id_edit" name="inf_id_edit" required>
+                            <label for="dri_id_edit" class="form-label">Damage Record</label>
+                            <select class="form-select" id="dri_id_edit" name="dri_id_edit" required>
                                 <%
                                     Connection con4;
                                     Statement st4;
@@ -335,13 +335,18 @@
                                     Class.forName("com.mysql.jdbc.Driver");
                                     con4 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
                                     st4 = con4.createStatement();
-                                    rs4 = st4.executeQuery("SELECT inf_id, location FROM infrastructure_core ORDER BY location");
+                                    rs4 = st4.executeQuery("SELECT dri.dri_id, i.location, dri.damage_details " +
+                                                          "FROM damage_recording_infra dri " +
+                                                          "LEFT JOIN infrastructure_core i ON dri.inf_id = i.inf_id " +
+                                                          "ORDER BY dri.dri_id DESC");
                                     
                                     while(rs4.next()){
-                                        int inf_id_option = rs4.getInt("inf_id");
-                                        String selected = (inf_id_option == inf_id_edit) ? "selected" : "";
+                                        int dri_id_option = rs4.getInt("dri_id");
+                                        String selected = (dri_id_option == dri_id_edit) ? "selected" : "";
                                 %>
-                                    <option value="<%= inf_id_option %>" <%= selected %>><%= rs4.getString("location") %></option>
+                                    <option value="<%= dri_id_option %>" <%= selected %>>
+                                        #<%= dri_id_option %> - <%= rs4.getString("location") %> - <%= rs4.getString("damage_details") %>
+                                    </option>
                                 <%
                                     }
                                     con4.close();
@@ -354,30 +359,6 @@
                                 <option value="For Repair" <%= "For Repair".equals(status_edit) ? "selected" : "" %>>For Repair</option>
                                 <option value="Repairing" <%= "Repairing".equals(status_edit) ? "selected" : "" %>>Repairing</option>
                                 <option value="Repaired" <%= "Repaired".equals(status_edit) ? "selected" : "" %>>Repaired</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="stf_id_edit" class="form-label">Assigned Staff</label>
-                            <select class="form-select" id="stf_id_edit" name="stf_id_edit" required>
-                                <%
-                                    Connection con5;
-                                    Statement st5;
-                                    ResultSet rs5;
-                                    
-                                    Class.forName("com.mysql.jdbc.Driver");
-                                    con5 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                                    st5 = con5.createStatement();
-                                    rs5 = st5.executeQuery("SELECT stf_id, staff_fname, staff_lname FROM staff_core ORDER BY staff_lname");
-                                    
-                                    while(rs5.next()){
-                                        int stf_id_option = rs5.getInt("stf_id");
-                                        String selected = (stf_id_option == stf_id_edit) ? "selected" : "";
-                                %>
-                                    <option value="<%= stf_id_option %>" <%= selected %>><%= rs5.getString("staff_fname") + " " + rs5.getString("staff_lname") %></option>
-                                <%
-                                    }
-                                    con5.close();
-                                %>
                             </select>
                         </div>
                         <div class="mb-3">
