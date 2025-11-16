@@ -197,9 +197,7 @@
                                 <table class="table table-striped" style="width:80%">
                                     <thead>
                                         <tr>
-                                            <td class="fw-bold">
-                                                ID
-                                            </td>
+                                           
 
                                             <td class="fw-bold">
                                                 First Name
@@ -255,7 +253,6 @@
 
                                     %>
                                     <tr>
-                                        <td><%=boff_id%></td>
                                         <td><%=official_fname%></td>
                                         <td><%=official_lname%></td>
                                         <td><%=official_midname%></td>
