@@ -3,9 +3,7 @@
 
     <% 
 
-
         //global variables for editing
-
         String location_edit = "";
         String status_edit = "";
         String type_of_building_edit = "";
@@ -26,6 +24,7 @@
             Connection con = null;
             PreparedStatement pst = null;
             ResultSet rs = null; 
+
 
             //insert statement
             try {
@@ -768,7 +767,6 @@
                                                                        "barangay_officials_core.official_midname as official_midname, " +
                                                                        "barangay_officials_core.boff_id as boff_id " +
                                                         "FROM barangay_officials_core";
-
                                                 Statement st4 = con4.createStatement();
                                                 rs4 = st4.executeQuery(query4);
                                                         
