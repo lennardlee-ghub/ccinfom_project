@@ -23,7 +23,10 @@
             String inf_id_str = request.getParameter("inf_id_add");
             int inf_id_add = Integer.parseInt(inf_id_str);
             String stf_id_str = request.getParameter("stf_id_add");
-            int stf_id_add = Integer.parseInt(stf_id_str);
+            Integer stf_id_add = null;
+            if(stf_id_str != null && !stf_id_str.isEmpty()) {
+                stf_id_add = Integer.parseInt(stf_id_str);
+            }
 
             //Connection
             Connection con;
@@ -36,8 +39,20 @@
             pst.setString(1, damage_details_add);
             pst.setString(2, cause_of_damage_add);
             pst.setString(3, date_recorded_add);
-            pst.setString(4, date_staff_assigned_add);
-            pst.setInt(5, stf_id_add);
+            
+            // Handle optional date and staff
+            if(date_staff_assigned_add == null || date_staff_assigned_add.isEmpty()) {
+                pst.setNull(4, java.sql.Types.DATE);
+            } else {
+                pst.setString(4, date_staff_assigned_add);
+            }
+            
+            if(stf_id_add == null) {
+                pst.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                pst.setInt(5, stf_id_add);
+            }
+            
             pst.setInt(6, inf_id_add);
             pst.executeUpdate();
 
@@ -46,10 +61,12 @@
             pst.setInt(1, inf_id_add);
             pst.executeUpdate();
 
-            //Update Staff availability
-            pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=?");
-            pst.setInt(1, stf_id_add);
-            pst.executeUpdate();
+            //Update Staff availability only if staff was assigned
+            if(stf_id_add != null) {
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=?");
+                pst.setInt(1, stf_id_add);
+                pst.executeUpdate();
+            }
 
             con.close();
             response.sendRedirect("damage_recording.jsp");
@@ -101,21 +118,37 @@
             String date_recorded = request.getParameter("date_recorded_edit");
             String date_staff_assigned = request.getParameter("date_staff_assigned_edit");
             int inf_id = Integer.parseInt(request.getParameter("inf_id_edit"));
-            int stf_id = Integer.parseInt(request.getParameter("stf_id_edit"));
+            String stf_id_str = request.getParameter("stf_id_edit");
+            Integer stf_id = null;
+            if(stf_id_str != null && !stf_id_str.isEmpty()) {
+                stf_id = Integer.parseInt(stf_id_str);
+            }
 
             //Connection
             Connection con;
             PreparedStatement pst;
             
-            //Insert statement
+            //Update statement
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
             pst = con.prepareStatement("UPDATE damage_recording_infra SET damage_details=?, cause_of_damage=?, date_recorded=?, date_staff_assigned=?, stf_id=?, inf_id=? WHERE dri_id=?");
             pst.setString(1, damage_details);
             pst.setString(2, cause_of_damage);
             pst.setString(3, date_recorded);
-            pst.setString(4, date_staff_assigned);
-            pst.setInt(5, stf_id);
+            
+            // Handle optional date and staff
+            if(date_staff_assigned == null || date_staff_assigned.isEmpty()) {
+                pst.setNull(4, java.sql.Types.DATE);
+            } else {
+                pst.setString(4, date_staff_assigned);
+            }
+            
+            if(stf_id == null) {
+                pst.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                pst.setInt(5, stf_id);
+            }
+            
             pst.setInt(6, inf_id);
             pst.setInt(7, dri_id);
             pst.executeUpdate();
@@ -125,10 +158,12 @@
             pst.setInt(1, inf_id);
             pst.executeUpdate();
 
-            //Update Staff availability
-            pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=(SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
-            pst.setInt(1, stf_id);
-            pst.executeUpdate();
+            //Update Staff availability only if staff was assigned
+            if(stf_id != null) {
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=(SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, stf_id);
+                pst.executeUpdate();
+            }
 
             con.close();
             response.sendRedirect("damage_recording.jsp");
@@ -144,6 +179,18 @@
 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
+            
+            // First, set the assigned staff back to Available (if any staff was assigned)
+            pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=? AND stf_id IS NOT NULL)");
+            pst.setInt(1, dri_id);
+            pst.executeUpdate();
+            
+            // Then delete related damage_repair records
+            pst = con.prepareStatement("DELETE FROM damage_repair WHERE dri_id=?");
+            pst.setInt(1, dri_id);
+            pst.executeUpdate();
+            
+            // Finally delete the damage_recording_infra record
             pst = con.prepareStatement("DELETE FROM damage_recording_infra WHERE dri_id=?");
             pst.setInt(1, dri_id);
             pst.executeUpdate();
@@ -293,12 +340,12 @@
                             <input type="date" class="form-control" id="date_recorded_add" name="date_recorded_add" required>
                         </div>
                         <div class="mb-3">
-                            <label for="date_staff_assigned_add" class="form-label">Date Staff Assigned</label>
-                            <input type="date" class="form-control" id="date_staff_assigned_add" name="date_staff_assigned_add" required>
+                            <label for="date_staff_assigned_add" class="form-label">Date Staff Assigned (Optional)</label>
+                            <input type="date" class="form-control" id="date_staff_assigned_add" name="date_staff_assigned_add">
                         </div>
                         <div class="mb-3">
-                            <label for="stf_id_add" class="form-label">Staff</label>
-                            <select class="form-select" id="stf_id_add" name="stf_id_add" required>
+                            <label for="stf_id_add" class="form-label">Staff (Optional)</label>
+                            <select class="form-select" id="stf_id_add" name="stf_id_add">
                                 <option value="">Select Available Staff</option>
                                 <%
                                     Connection con2;
@@ -384,12 +431,13 @@
                                     <input type="date" class="form-control" id="date_recorded_edit" name="date_recorded_edit" value="<%= date_recorded_edit %>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="date_staff_assigned_edit" class="form-label">Damage Staff Assigned</label>
+                                    <label for="date_staff_assigned_edit" class="form-label">Damage Staff Assigned (Optional)</label>
                                     <input type="date" class="form-control" id="date_staff_assigned_edit" name="date_staff_assigned_edit" value="<%= date_staff_assigned_edit %>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="stf_id_edit" class="form-label">Staff</label>
-                                    <select class="form-select" id="stf_id_edit" name="stf_id_edit" required>
+                                    <label for="stf_id_edit" class="form-label">Staff (Optional)</label>
+                                    <select class="form-select" id="stf_id_edit" name="stf_id_edit">
+                                        <option value="">No Staff Assigned</option>
                                         <%
                                             Connection con4;
                                             Statement st4;

@@ -7,6 +7,7 @@
         String unit_of_measurement_edit = "";
         String category_edit = "";
         String item_name_edit = "";
+        String date_added_edit = "";
         int  quantity_edit= 0;
         int inv_id_edit = 0;
 
@@ -23,6 +24,7 @@
             String quantityStr = request.getParameter("quantity_add");
             quantityStr = quantityStr.replaceAll(",", "");
             int quantity_add = Integer.parseInt(quantityStr);
+            String date_added_add = request.getParameter("date_added_add");
 
             //Connection
             Connection con;
@@ -32,12 +34,13 @@
             //Insert statement
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project", "root", "ccinfomgoat9");
-            pst = con.prepareStatement("INSERT INTO inventory_core(item_name, type_of_inventory, unit_of_measurement, category, quantity) VALUES(?,?,?,?,?)");
+            pst = con.prepareStatement("INSERT INTO inventory_core(item_name, type_of_inventory, unit_of_measurement, category, quantity, date_added) VALUES(?,?,?,?,?,?)");
             pst.setString(1, item_name_add);
             pst.setString(2, type_of_inventory_add);
             pst.setString(3, unit_of_measurement_add);
             pst.setString(4, category_add);
             pst.setInt(5,quantity_add);
+            pst.setString(6, date_added_add);
             pst.executeUpdate();
             response.sendRedirect("inventory_core.jsp");
         }
@@ -67,6 +70,7 @@
                 unit_of_measurement_edit = rs.getString("unit_of_measurement");
                 category_edit =  rs.getString("category");
                 quantity_edit = rs.getInt("quantity");
+                date_added_edit = rs.getString("date_added");
             }
             %>
 
@@ -90,6 +94,7 @@
             String quantityStr = request.getParameter("quantity_edit");
             quantityStr = quantityStr.replaceAll(",", "");
             int quantity = Integer.parseInt(quantityStr);
+            String date_added = request.getParameter("date_added_edit");
 
             //// Connection
             Connection con;
@@ -97,13 +102,14 @@
 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-            pst = con.prepareStatement("UPDATE inventory_core SET item_name=?, type_of_inventory=?, unit_of_measurement=?, category=?, quantity=? WHERE inv_id=?");
+            pst = con.prepareStatement("UPDATE inventory_core SET item_name=?, type_of_inventory=?, unit_of_measurement=?, category=?, quantity=?, date_added=? WHERE inv_id=?");
             pst.setString(1, item_name);
             pst.setString(2, type_of_inventory);
             pst.setString(3, unit_of_measurement);
             pst.setString(4, category);
             pst.setInt(5, quantity);
-            pst.setInt(6, inv_id);
+            pst.setString(6, date_added);
+            pst.setInt(7, inv_id);
             pst.executeUpdate();
             response.sendRedirect("inventory_core.jsp");
         }
@@ -174,6 +180,7 @@
                                             <td class="fw-bold">Unit of Measurement</td>
                                             <td class="fw-bold">Category</td>
                                             <td class="fw-bold">Quantity</td>
+                                            <td class="fw-bold">Date Added</td>
                                             <td class="fw-bold">Action</td>
                                         </tr>
                                     </thead>
@@ -193,6 +200,17 @@
                                             while(rs.next())
                                             {
                                                 int inv_id = rs.getInt("inv_id");
+                                                String date_added = rs.getString("date_added");
+                                                
+                                                // Format date
+                                                if (date_added != null && !"".equals(date_added)) {
+                                                    java.text.SimpleDateFormat fromDB = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                                                    java.text.SimpleDateFormat toDisplay = new java.text.SimpleDateFormat("MM/dd/yyyy");
+                                                    java.util.Date parsed = fromDB.parse(date_added);
+                                                    date_added = toDisplay.format(parsed);
+                                                } else {
+                                                    date_added = "N/A";
+                                                }
                                         %>
                                         <tr> 
                                             <td><%=rs.getString("item_name")%></td>
@@ -200,6 +218,7 @@
                                             <td><%=rs.getString("unit_of_measurement") %></td>
                                             <td><%=rs.getString("category") %></td>
                                             <td><%=rs.getInt("quantity")%></td>
+                                            <td><%=date_added%></td>
                                             <td>
                                                 <div class="dropdown text-center">
                                                     <button class="btn btn-primary fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -273,6 +292,10 @@
                                     <label for="quantity_add" class="form-label">Quantity</label>
                                     <input type="text" class="form-control" id="quantity_add" name="quantity_add">
                                 </div>
+                                <div class="mb-3">
+                                    <label for="date_added_add" class="form-label">Date Added</label>
+                                    <input type="date" class="form-control" id="date_added_add" name="date_added_add" required>
+                                </div>
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </form>
                         </div>
@@ -331,7 +354,11 @@
                                     <label for="quantity_edit" class="form-label">Quantity</label>
                                     <input type="text" class="form-control" id="quantity_edit" name="quantity_edit" value="<%= quantity_edit %>">
                                 </div>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <div class="mb-3">
+                                    <label for="date_added_edit" class="form-label">Date Added</label>
+                                    <input type="date" class="form-control" id="date_added_edit" name="date_added_edit" value="<%= date_added_edit %>">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
                             </form>
                         </div>
                     </div>

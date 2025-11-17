@@ -44,6 +44,11 @@
                 pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
                 pst.setInt(1, dri_id_add);
                 pst.executeUpdate();
+                
+                // Update infrastructure status to 'No need repair'
+                pst = con.prepareStatement("UPDATE infrastructure_core SET status='No need repair' WHERE inf_id = (SELECT inf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id_add);
+                pst.executeUpdate();
             }
             
             con.close();
@@ -111,6 +116,11 @@
                 pst.executeUpdate();
             } else if("Repaired".equals(status)){
                 pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id);
+                pst.executeUpdate();
+                
+                // Update infrastructure status to 'No need repair'
+                pst = con.prepareStatement("UPDATE infrastructure_core SET status='No need repair' WHERE inf_id = (SELECT inf_id FROM damage_recording_infra WHERE dri_id=?)");
                 pst.setInt(1, dri_id);
                 pst.executeUpdate();
             }
