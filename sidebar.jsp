@@ -69,16 +69,52 @@
                       <span style="padding-left:10px">Damage Repair</span>
                     </a>
                 </li>
+
                 <li>
-                    <a href="../ccinfom_project/inventory_usage.jsp" kstyle="color: white;text-decoration: none;font-size:21px">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
-                        <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
-                        <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
-                    </svg>
-                    
-                    <span style="padding-left:10px">Inventory Usage</span>
+                    <a href="../ccinfom_project/inventory_usage.jsp" style="color: white;text-decoration: none;font-size:21px">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
+                            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                            <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
+                        </svg>
+                      <span style="padding-left:10px">Inventory Usage</span>
                     </a>
                 </li>
+
+                <li style="padding-top:20px">
+                    <div style="color:white;font-size:23px;border-bottom:2px solid gray;padding-bottom:10px">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-file-bar-graph" viewBox="0 0 16 16">
+                            <path d="M4.5 12a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5zm3 0a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5zm3 0a.5.5 0 0 1-.5-.5v-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5z"/>
+                            <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1"/>
+                        </svg>
+                        Reports
+                    </div>
+                </li>
+
+                <li>
+                    <a href="../ccinfom_project/infrastructure_report.jsp" style="color: white;text-decoration: none;font-size:21px">
+                      <span style="padding-left:10px">Infrastructure Report</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="../ccinfom_project/inventory_report.jsp" style="color: white;text-decoration: none;font-size:21px">
+                      <span style="padding-left:10px">Inventory report</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="../ccinfom_project/damaged_infrastructure_report.jsp" style="color: white;text-decoration: none;font-size:21px">
+                      <span style="padding-left:10px">Damaged Infra Report</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="../ccinfom_project/staff_report.jsp" style="color: white;text-decoration: none;font-size:21px">
+                      <span style="padding-left:10px">Staff Report</span>
+                    </a>
+                </li>
+
+
             </ul>
             
         </div>
