@@ -159,6 +159,18 @@
                 );
                 pst.setInt(1, inf_id);
                 rs = pst.executeQuery();
+
+                if(rs.next()){
+
+                    location_edit = rs.getString("location");
+                    type_of_building_edit = rs.getString("type_of_infra");
+                    status_edit = rs.getString("status");
+                    inf_id_edit = rs.getInt("inf_id");
+
+                    //official name
+                    boff_id_edit = rs.getInt("barangay_officials_core_boff_id");
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -176,16 +188,7 @@
                 }
             }
 
-            if(rs.next()){
 
-                location_edit = rs.getString("location");
-                type_of_building_edit = rs.getString("type_of_infra");
-                status_edit = rs.getString("status");
-                inf_id_edit = rs.getInt("inf_id");
-
-                //official name
-                boff_id_edit = rs.getInt("barangay_officials_core_boff_id");
-            }
 
 
             %>
@@ -276,23 +279,6 @@
                         pst_chk_boff.setInt(1, inf_id_hidden);
                         rs_chk_boff = pst_chk_boff.executeQuery();
 
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        // CLOSE EVERYTHING HERE - THIS IS THE MOST IMPORTANT PART!
-                        try {
-                            if (pst_chk_boff != null) pst_chk_boff.close();
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                        
-                        try {
-                            if (con_chk_boff != null) con_chk_boff.close();
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
                     //IT MEANS NA OLD RECORD MERON SIYA
                     if(rs_chk_boff.next()){
 
@@ -365,7 +351,26 @@
                             }
                         }
                      
+                    }                        
+
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        // CLOSE EVERYTHING HERE - THIS IS THE MOST IMPORTANT PART!
+                        try {
+                            if (pst_chk_boff != null) pst_chk_boff.close();
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        
+                        try {
+                            if (con_chk_boff != null) con_chk_boff.close();
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                     }
+
+
                 
 
 
@@ -387,6 +392,41 @@
                     pst_chk_boff2 = con_chk_boff2.prepareStatement("SELECT * FROM barangay_officials_infra WHERE inf_id =?");
                     pst_chk_boff2.setInt(1, inf_id_hidden);
                     rs_chk_boff2 = pst_chk_boff2.executeQuery();
+
+                    //IT MEANS NA OLD RECORD MERON SIYA SO NADELETE
+                    if(rs_chk_boff2.next()){
+                        //so we have to delete it if we disassing it from meron to none
+                        Connection con_del2 = null;
+                        PreparedStatement pst_del2 = null;
+                        ResultSet rs_del2 = null;
+
+                        try{
+    
+                            Class.forName("com.mysql.jdbc.Driver");
+                            con_del2 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
+                            pst_del2 = con_del2.prepareStatement("DELETE FROM barangay_officials_infra WHERE inf_id=?");
+                            pst_del2.setInt(1, inf_id_hidden);
+                            pst_del2.executeUpdate();
+
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        } finally {
+                            // CLOSE EVERYTHING HERE - THIS IS THE MOST IMPORTANT PART!
+                            try {
+                                if (pst_del2 != null) pst_del2.close();
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                            
+                            try {
+                                if (con_del2 != null) con_del2.close();
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+         
+                 }
+
                 }catch(Exception e){
                     e.printStackTrace();
                 } try {
@@ -400,39 +440,7 @@
                 }
         
     
-                //IT MEANS NA OLD RECORD MERON SIYA SO NADELETE
-                if(rs_chk_boff2.next()){
-                    //so we have to delete it if we disassing it from meron to none
-                    Connection con_del2 = null;
-                    PreparedStatement pst_del2 = null;
-                    ResultSet rs_del2 = null;
 
-                    try{
-   
-                        Class.forName("com.mysql.jdbc.Driver");
-                        con_del2 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                        pst_del2 = con_del2.prepareStatement("DELETE FROM barangay_officials_infra WHERE inf_id=?");
-                        pst_del2.setInt(1, inf_id_hidden);
-                        pst_del2.executeUpdate();
-
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    } finally {
-                        // CLOSE EVERYTHING HERE - THIS IS THE MOST IMPORTANT PART!
-                        try {
-                            if (pst_del2 != null) pst_del2.close();
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                        
-                        try {
-                            if (con_del2 != null) con_del2.close();
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-         
-                }
             }
    
             %>
