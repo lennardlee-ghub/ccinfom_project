@@ -128,9 +128,24 @@
             Connection con;
             PreparedStatement pst;
             
-            //Update statement
+            //Connecting to database
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
+            
+            //Getting the old staff and infrastructure
+            int old_stf_id = 0;
+            int old_inf_id = 0;
+
+            pst = con.prepareStatement("SELECT stf_id, inf_id FROM damage_recording_infra WHERE dri_id=?");
+            pst.setInt(1, dri_id);
+            ResultSet rsCurrent = pst.executeQuery();
+            while(rsCurrent.next())
+            {
+                old_stf_id = rsCurrent.getInt("stf_id");
+                old_inf_id = rsCurrent.getInt("inf_id");
+            }
+            
+            //getting the new details
             pst = con.prepareStatement("UPDATE damage_recording_infra SET damage_details=?, cause_of_damage=?, date_recorded=?, date_staff_assigned=?, stf_id=?, inf_id=? WHERE dri_id=?");
             pst.setString(1, damage_details);
             pst.setString(2, cause_of_damage);
@@ -153,14 +168,31 @@
             pst.setInt(7, dri_id);
             pst.executeUpdate();
 
-            //Update Infrastructure status
-            pst = con.prepareStatement("UPDATE infrastructure_core SET status='Damaged' WHERE inf_id=(SELECT inf_id FROM damage_recording_infra WHERE dri_id=?)");
+            //reset the old infrastructure back to no need repair if changed
+            if(old_inf_id > 0 && old_inf_id != inf_id)
+            {
+                pst = con.prepareStatement("UPDATE infrastructure_core SET status='No need repair' WHERE inf_id=?");
+                pst.setInt(1, old_inf_id);
+                pst.executeUpdate();
+            }
+            
+            //Update the new Infrastructure status
+            pst = con.prepareStatement("UPDATE infrastructure_core SET status='Damaged' WHERE inf_id=?");
             pst.setInt(1, inf_id);
             pst.executeUpdate();
 
+            //reset the old staff back to available
+            if(old_stf_id > 0 && (stf_id == null || old_stf_id != stf_id))
+            {
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id=?");
+                pst.setInt(1, old_stf_id);
+                pst.executeUpdate();
+            }
+            
+            
             //Update Staff availability only if staff was assigned
             if(stf_id != null) {
-                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=(SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id=?");
                 pst.setInt(1, stf_id);
                 pst.executeUpdate();
             }
@@ -182,6 +214,11 @@
             
             // First, set the assigned staff back to Available (if any staff was assigned)
             pst = con.prepareStatement("UPDATE staff_core SET availability='Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=? AND stf_id IS NOT NULL)");
+            pst.setInt(1, dri_id);
+            pst.executeUpdate();
+
+            //Secondly, change the infrastructure back to No need repair
+            pst = con.prepareStatement("UPDATE infrastructure_core SET status='No need repair' WHERE inf_id = (SELECT inf_id FROM damage_recording_infra WHERE dri_id=? AND inf_id IS NOT NULL)");
             pst.setInt(1, dri_id);
             pst.executeUpdate();
             
