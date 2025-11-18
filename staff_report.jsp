@@ -327,8 +327,6 @@
                                                         statusClass = "badge bg-warning text-dark";
                                                     } else if("For Repair".equals(repair_status)) {
                                                         statusClass = "badge bg-info text-dark";
-                                                    } else if("Not Started".equals(repair_status)) {
-                                                        statusClass = "badge bg-danger";
                                                     } else {
                                                         statusClass = "badge bg-secondary";
                                                     }
