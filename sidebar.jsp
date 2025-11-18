@@ -103,8 +103,8 @@
                 </li>
 
                 <li>
-                    <a href="../ccinfom_project/damaged_infrastructure_report.jsp" style="color: white;text-decoration: none;font-size:21px">
-                      <span style="padding-left:10px">Barangay Officials Report</span>
+                    <a href="../ccinfom_project/monthly_repair_report.jsp" style="color: white;text-decoration: none;font-size:21px">
+                      <span style="padding-left:10px">Monthly Repair Report</span>
                     </a>
                 </li>
 
