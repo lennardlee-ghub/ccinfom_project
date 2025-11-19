@@ -163,11 +163,12 @@
                                                               "LEFT JOIN ( " +
                                                               "  SELECT dri.stf_id, dri.dri_id, dri.inf_id, dri.date_recorded, dri.date_staff_assigned, dri.damage_details " +
                                                               "  FROM damage_recording_infra dri " +
-                                                              "  WHERE dri.date_recorded = ( " +
-                                                              "    SELECT MAX(dri2.date_recorded) " +
-                                                              "    FROM damage_recording_infra dri2 " +
-                                                              "    WHERE dri.stf_id = dri2.stf_id " +
-                                                              "  ) " +
+                                                              "  INNER JOIN ( " +
+                                                              "    SELECT stf_id, MAX(dri_id) as max_dri_id " +
+                                                              "    FROM damage_recording_infra " +
+                                                              "    WHERE stf_id IS NOT NULL " +
+                                                              "    GROUP BY stf_id " +
+                                                              "  ) latest ON dri.stf_id = latest.stf_id AND dri.dri_id = latest.max_dri_id " +
                                                               " ) latest_dri ON s.stf_id = latest_dri.stf_id " +
                                                               "LEFT JOIN infrastructure_core i ON latest_dri.inf_id = i.inf_id " +
                                                               "LEFT JOIN damage_repair dr ON latest_dri.dri_id = dr.dri_id " +
