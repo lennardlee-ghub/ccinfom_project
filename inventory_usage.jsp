@@ -55,7 +55,7 @@
                 </script>
                 <%
             } else {
-                // Insert usage record (inf_id removed; can be derived from damage_repair)
+                // Insert usage record (can be derived from damage_repair)
                 pst = con.prepareStatement("INSERT INTO inventory_usage(dr_id, inv_id, quantity_used, date_used, category) VALUES(?,?,?,?,?)");
                 pst.setInt(1, dr_id);
                 pst.setInt(2, inv_id);
@@ -184,7 +184,7 @@
                 }
             }
             
-            // Update usage record (inf_id removed)
+          
             pst = con.prepareStatement("UPDATE inventory_usage SET dr_id=?, inv_id=?, quantity_used=?, date_used=?, category=? WHERE inv_usg_id=?");
             pst.setInt(1, dr_id);
             pst.setInt(2, inv_id);
@@ -304,7 +304,7 @@
                                 <thead>
                                     <tr>
                                         <td class="fw-bold">Usage ID</td>
-                                        <td class="fw-bold">Damage Repair ID</td>
+                                        <td class="fw-bold">Damage Repair Info</td>
                                         <td class="fw-bold">Item Used</td>
                                         <td class="fw-bold">Category</td>
                                         <td class="fw-bold">Quantity Used</td>
@@ -322,8 +322,11 @@
                                             Class.forName("com.mysql.jdbc.Driver");
                                             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
 
-                                            String query = "SELECT iu.*, ic.item_name, ic.unit_of_measurement FROM inventory_usage iu " +
+                                            String query = "SELECT iu.*, ic.item_name, ic.unit_of_measurement, inf.type_of_infra, inf.location FROM inventory_usage iu " +
                                                          "JOIN inventory_core ic ON iu.inv_id = ic.inv_id " +
+                                                         "LEFT JOIN damage_repair dr ON iu.dr_id = dr.dr_id " +
+                                                         "LEFT JOIN damage_recording_infra dri ON dr.dri_id = dri.dri_id " +
+                                                         "LEFT JOIN infrastructure_core inf ON dri.inf_id = inf.inf_id " +
                                                          "ORDER BY iu.date_used DESC, iu.inv_usg_id DESC";
                                             st = con.createStatement();
                                             rs = st.executeQuery(query);
@@ -334,7 +337,9 @@
                                     %>
                                     <tr>
                                         <td><%=inv_usg_id%></td>
-                                        <td><%=rs.getInt("dr_id")%></td>
+                                        <td><%=
+                                            (rs.getString("type_of_infra") != null ? rs.getString("type_of_infra") + " - " + rs.getString("location") : "N/A")
+                                        %></td>
                                         <td><%=rs.getString("item_name")%></td>
                                         <td><%=rs.getString("category")%></td>
                                         <td><%=rs.getInt("quantity_used")%> <%=rs.getString("unit_of_measurement")%></td>
