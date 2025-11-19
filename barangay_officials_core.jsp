@@ -1,7 +1,7 @@
 <%@page import="java.sql.*" %>
 
 <% 
-    //global variables for editing
+   
     String official_fname_edit = "";
     String official_lname_edit = "";
     String official_midname_edit = "";
@@ -10,12 +10,12 @@
     String availability_edit = "";
     int boff_id_edit = 0;
 
-    //for inserting a record logic
+   
     String action = request.getParameter("action");
 
     if("insert".equals(action)){
 
-        //modal insert variables
+       
         String official_fname_add = request.getParameter("official_fname_add"); 
         String official_lname_add = request.getParameter("official_lname_add");
         String official_midname_add = request.getParameter("official_midname_add");
@@ -23,12 +23,12 @@
         String address_add = request.getParameter("address_add");
         String availability_add = request.getParameter("availability_add");
 
-        //connection
+       
         Connection con = null;
         PreparedStatement pst = null;
 
         try {
-            //insert statement
+           
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
             pst = con.prepareStatement("INSERT INTO barangay_officials_core(official_fname, official_lname, official_midname, office, address, availability) VALUES(?,?,?,?,?,?)");
@@ -50,18 +50,17 @@
     }
     else if("getEdit".equals(action)){
 
-        //getting the boff_id which is the primary key
+        
         String boff_id_str = request.getParameter("boff_id");
 
-        //converting to int
+      
         int boff_id = Integer.parseInt(boff_id_str);
 
-        //connection
+    
         Connection con;
         PreparedStatement pst;
         ResultSet rs; 
 
-        //get the record to edit
         Class.forName("com.mysql.jdbc.Driver");
         con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
         pst = con.prepareStatement("SELECT * FROM barangay_officials_core WHERE boff_id=?");
@@ -81,7 +80,7 @@
         %>
 
         <script>
-            //show the modal
+          
             document.addEventListener('DOMContentLoaded', function() {
                 var editModal = new bootstrap.Modal(document.getElementById('editModal'));
                 editModal.show();
@@ -92,7 +91,7 @@
 
     }else if("submitEdit".equals(action)){
         
-        //modal edit variables
+        
         official_fname_edit = request.getParameter("official_fname_edit"); 
         official_lname_edit = request.getParameter("official_lname_edit");
         official_midname_edit = request.getParameter("official_midname_edit");
@@ -100,15 +99,15 @@
         address_edit = request.getParameter("address_edit");
         availability_edit = request.getParameter("availability_edit");
         String boff_id_hidden_str = request.getParameter("boff_id_hidden");
-        //parsing to int
+       
         int boff_id_hidden = Integer.parseInt(boff_id_hidden_str);
 
-        //connection
+       
         Connection con;
         PreparedStatement pst;
         ResultSet rs; 
 
-        //submit edit statement
+      
         Class.forName("com.mysql.jdbc.Driver");
         con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
         pst = con.prepareStatement("UPDATE barangay_officials_core SET official_fname=?, official_lname=?, official_midname=?, office=?, address=?, availability=? WHERE boff_id=?");
@@ -124,7 +123,7 @@
         %>
 
         <script>
-            //hide the modal
+         
             document.addEventListener('DOMContentLoaded', function() {
                 var editModal = new bootstrap.Modal(document.getElementById('editModal'));
                 editModal.hide();
@@ -136,13 +135,13 @@
     
     else if("delete".equals(action)){
 
-        //connection
+    
         Connection con;
         PreparedStatement pst;
         ResultSet rs;
 
         String boff_id_delete_str = request.getParameter("boff_id");
-        //parsing to int
+        
         int boff_id_delete = Integer.parseInt(boff_id_delete_str);
 
         Class.forName("com.mysql.jdbc.Driver");

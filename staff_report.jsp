@@ -8,10 +8,9 @@
     String date_start_filter = "";
     String date_end_filter = "";
     
-    // Get current year and month as defaults
     Calendar cal = Calendar.getInstance();
     int currentYear = cal.get(Calendar.YEAR);
-    int currentMonth = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH is 0-based
+    int currentMonth = cal.get(Calendar.MONTH) + 1; 
     
     String xfilter = "";
 
@@ -20,7 +19,7 @@
         date_start_filter = request.getParameter("date_start_filter");
         date_end_filter = request.getParameter("date_end_filter");
 
-        // Status filter: Available means either latest repair is Repaired OR no damage record exists
+        
         if(status_filter != null && !status_filter.isEmpty() && !"All".equals(status_filter)){
             if("Available".equals(status_filter)){
                 xfilter += " AND (dr.status = 'Repaired' OR latest_dri.dri_id IS NULL)";
@@ -191,7 +190,6 @@
                                                     String date_start = rs.getString("date_start");
                                                     String date_end = rs.getString("date_end");
                                                     
-                                                    // Format dates
                                                     if(date_recorded != null && !date_recorded.isEmpty()) {
                                                         try {
                                                             java.util.Date parsed = fromDB.parse(date_recorded);
@@ -221,17 +219,15 @@
                                                     
                                                     if(repair_status == null) repair_status = "Not Started";
                                                     if(infrastructure == null) infrastructure = "N/A";
-                                                    // Compute availability: Available if no latest_dri OR latest repair status is Repaired
                                                     String availability;
                                                     if(latest_dri_id == null || latest_dri_id.isEmpty()) {
-                                                        availability = "Available"; // scenario 2: no record found
+                                                        availability = "Available"; 
                                                     } else if("Repaired".equals(repair_status)) {
-                                                        availability = "Available"; // scenario 1: repaired
+                                                        availability = "Available"; 
                                                     } else {
                                                         availability = "Not available";
                                                     }
                                                     
-                                                    // Status badge color
                                                     String statusClass = "";
                                                     if("Repaired".equals(repair_status)) {
                                                         statusClass = "badge bg-success";

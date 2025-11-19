@@ -1,7 +1,7 @@
 <%@page import="java.sql.*" %>
 
 <%
-    // Global variables for editing
+   
     int inv_usg_id_edit = 0;
     int dr_id_edit = 0;
     int inv_id_edit = 0;
@@ -10,12 +10,12 @@
     String date_used_edit = "";
     String category_edit = "";
 
-    // Handle form actions
+  
     String action = request.getParameter("action");
 
         if("insert".equals(action))
     {
-        // Get form parameters
+        
         int dr_id = Integer.parseInt(request.getParameter("dr_id_add"));
         int inv_id = Integer.parseInt(request.getParameter("inv_id_add"));
         String quantityStr = request.getParameter("quantity_used_add");
@@ -35,7 +35,7 @@
             // Start transaction
             con.setAutoCommit(false);
             
-            // Check if enough inventory is available
+            
             pst = con.prepareStatement("SELECT quantity FROM inventory_core WHERE inv_id = ?");
             pst.setInt(1, inv_id);
             rs = pst.executeQuery();
@@ -46,7 +46,7 @@
             }
             
             if(available_quantity < quantity_used) {
-                // Not enough inventory
+              
                 con.rollback();
                 %>
                 <script>
@@ -55,7 +55,7 @@
                 </script>
                 <%
             } else {
-                // Insert usage record (can be derived from damage_repair)
+                // Insert usage record (derived from damage_repair)
                 pst = con.prepareStatement("INSERT INTO inventory_usage(dr_id, inv_id, quantity_used, date_used, category) VALUES(?,?,?,?,?)");
                 pst.setInt(1, dr_id);
                 pst.setInt(2, inv_id);
@@ -64,13 +64,12 @@
                 pst.setString(5, category);
                 pst.executeUpdate();
                 
-                // Update inventory core - deduct the quantity
+                // Update the inventory core thing cause u dont wannt the goofy stuff - deduct the quantity
                 pst = con.prepareStatement("UPDATE inventory_core SET quantity = quantity - ? WHERE inv_id = ?");
                 pst.setInt(1, quantity_used);
                 pst.setInt(2, inv_id);
                 pst.executeUpdate();
                 
-                // Commit transaction
                 con.commit();
                 response.sendRedirect("inventory_usage.jsp");
             }
@@ -148,7 +147,7 @@
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
             con.setAutoCommit(false);
             
-            // Get old quantity used
+           
             pst = con.prepareStatement("SELECT quantity_used FROM inventory_usage WHERE inv_usg_id = ?");
             pst.setInt(1, inv_usg_id);
             rs = pst.executeQuery();
@@ -158,10 +157,10 @@
                 old_quantity_used = rs.getInt("quantity_used");
             }
             
-            // Calculate difference
+            
             int quantity_difference = new_quantity_used - old_quantity_used;
             
-            // Check if enough inventory available for increase
+           
             if(quantity_difference > 0) {
                 pst = con.prepareStatement("SELECT quantity FROM inventory_core WHERE inv_id = ?");
                 pst.setInt(1, inv_id);
@@ -227,7 +226,7 @@
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
             con.setAutoCommit(false);
             
-            // Get the quantity to restore
+            
             pst = con.prepareStatement("SELECT inv_id, quantity_used FROM inventory_usage WHERE inv_usg_id = ?");
             pst.setInt(1, inv_usg_id);
             rs = pst.executeQuery();
@@ -239,12 +238,12 @@
                 quantity_used = rs.getInt("quantity_used");
             }
             
-            // Delete usage record
+            
             pst = con.prepareStatement("DELETE FROM inventory_usage WHERE inv_usg_id = ?");
             pst.setInt(1, inv_usg_id);
             pst.executeUpdate();
             
-            // Restore inventory quantity
+           
             pst = con.prepareStatement("UPDATE inventory_core SET quantity = quantity + ? WHERE inv_id = ?");
             pst.setInt(1, quantity_used);
             pst.setInt(2, inv_id);
@@ -591,7 +590,6 @@
 
     </body>
     <script>
-        // Validate quantity against available inventory for Add and Edit forms.
         function getSelectedAvailable(selectEl) {
             var opt = selectEl.options[selectEl.selectedIndex];
             if(!opt) return 0;
@@ -609,7 +607,7 @@
         function validateInventoryUsage(form, isEdit) {
             var invSelect = form.querySelector(isEdit ? '#inv_id_edit' : '#inv_id_add');
             var qtyInput = form.querySelector(isEdit ? '#quantity_used_edit' : '#quantity_used_add');
-            // Require item selection first
+            // Require item selection first cause why not bruhhh im cryinn bruhhh why is sql tripping
             if(!invSelect || !invSelect.value) {
                 showError(isEdit ? 'quantity_error_edit' : 'quantity_error_add', 'Please select an inventory item first.');
                 if(invSelect) invSelect.focus();
@@ -619,7 +617,6 @@
             var requested = parseInt(qtyInput.value || '0', 10);
 
             if(isEdit) {
-                // allow restoring the previously used amount by adding original used
                 var original = parseInt(qtyInput.getAttribute('data-original') || '0', 10);
                 var allowed = available + original;
                 if(requested > allowed) {
@@ -637,11 +634,10 @@
             return true;
         }
 
-        // Live validation handlers
+       
         document.addEventListener('DOMContentLoaded', function() {
             var addForm = document.querySelector('form[action="inventory_usage.jsp"][method="POST"]');
             if(addForm) {
-                // attach the submit handler for add form (action=insert)
                 addForm.addEventListener('submit', function(e){
                     var actionInput = addForm.querySelector('input[name="action"]');
                     if(actionInput && actionInput.value === 'insert') {
@@ -654,16 +650,13 @@
                 var qtyAdd = document.getElementById('quantity_used_add');
                 var invAdd = document.getElementById('inv_id_add');
                 if(qtyAdd && invAdd) {
-                    // initial disabled state: disabled until item selected
+                   
                     qtyAdd.disabled = !invAdd.value;
 
-                    // when user focuses quantity while disabled, prompt them to select item
                     qtyAdd.addEventListener('focus', function(){ if(this.disabled){ showError('quantity_error_add','Please select an inventory item first.'); invAdd.focus(); } });
 
-                    // live validation
                     qtyAdd.addEventListener('input', function(){ validateInventoryUsage(addForm, false); });
                     invAdd.addEventListener('change', function(){
-                        // enable or disable quantity based on selection
                         qtyAdd.disabled = !invAdd.value;
                         if(invAdd.value) {
                             showError('quantity_error_add','');
@@ -674,7 +667,6 @@
                 }
             }
 
-            // Edit form (submitEdit)
             var editForm = null;
             var forms = document.querySelectorAll('form[action="inventory_usage.jsp"][method="POST"]');
             for(var i=0;i<forms.length;i++){
@@ -682,7 +674,6 @@
                 if(ai && ai.value === 'submitEdit') { editForm = forms[i]; break; }
             }
             if(editForm) {
-                // store original quantity on the quantity input as data-original
                 var qtyEdit = document.getElementById('quantity_used_edit');
                 if(qtyEdit) {
                     qtyEdit.setAttribute('data-original', '<%= quantity_used_edit %>');
@@ -696,7 +687,6 @@
 
                 var invEdit = document.getElementById('inv_id_edit');
                 if(qtyEdit && invEdit) {
-                    // initial disabled state for edit: enable only if an item is selected
                     qtyEdit.disabled = !invEdit.value;
 
                     qtyEdit.addEventListener('focus', function(){ if(this.disabled){ showError('quantity_error_edit','Please select an inventory item first.'); invEdit.focus(); } });
