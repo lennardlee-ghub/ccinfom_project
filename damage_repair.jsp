@@ -98,9 +98,21 @@
             // Connection
             Connection con;
             PreparedStatement pst;
+            ResultSet rs;
 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
+            
+            // Get the old status before updating
+            pst = con.prepareStatement("SELECT status FROM damage_repair WHERE dr_id=?");
+            pst.setInt(1, dr_id);
+            rs = pst.executeQuery();
+            String old_status = "";
+            if(rs.next()){
+                old_status = rs.getString("status");
+            }
+            
+            // Update the damage_repair record
             pst = con.prepareStatement("UPDATE damage_repair SET date_start=?, date_end=?, status=?, dri_id=? WHERE dr_id=?");
             pst.setString(1, date_start);
             pst.setString(2, date_end);
@@ -109,7 +121,14 @@
             pst.setInt(5, dr_id);
             pst.executeUpdate();
             
-            // Update staff availability based on status
+            // If changing FROM Repaired to something else, restore infrastructure to Damaged
+            if("Repaired".equals(old_status) && !"Repaired".equals(status)){
+                pst = con.prepareStatement("UPDATE infrastructure_core SET status='Damaged' WHERE inf_id = (SELECT inf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id);
+                pst.executeUpdate();
+            }
+            
+            // Update staff availability based on new status
             if("For Repair".equals(status) || "Repairing".equals(status)){
                 pst = con.prepareStatement("UPDATE staff_core SET availability='Not Available' WHERE stf_id = (SELECT stf_id FROM damage_recording_infra WHERE dri_id=?)");
                 pst.setInt(1, dri_id);
@@ -134,9 +153,30 @@
             // Connection
             Connection con;
             PreparedStatement pst;
+            ResultSet rs;
 
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
+            
+            // Get the status and dri_id before deleting
+            pst = con.prepareStatement("SELECT status, dri_id FROM damage_repair WHERE dr_id=?");
+            pst.setInt(1, dr_id);
+            rs = pst.executeQuery();
+            String status_to_delete = "";
+            int dri_id_to_restore = 0;
+            if(rs.next()){
+                status_to_delete = rs.getString("status");
+                dri_id_to_restore = rs.getInt("dri_id");
+            }
+            
+            // If deleting a Repaired record, restore infrastructure to Damaged
+            if("Repaired".equals(status_to_delete)){
+                pst = con.prepareStatement("UPDATE infrastructure_core SET status='Damaged' WHERE inf_id = (SELECT inf_id FROM damage_recording_infra WHERE dri_id=?)");
+                pst.setInt(1, dri_id_to_restore);
+                pst.executeUpdate();
+            }
+            
+            // Delete the damage_repair record
             pst = con.prepareStatement("DELETE FROM damage_repair WHERE dr_id=?");
             pst.setInt(1, dr_id);
             pst.executeUpdate();
