@@ -233,7 +233,7 @@
                                             Statement st = null;
                                             ResultSet rs = null;
                                         
-                                            try {
+                                            try { 
                                                 Class.forName("com.mysql.jdbc.Driver");
                                                 con = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
                                         
