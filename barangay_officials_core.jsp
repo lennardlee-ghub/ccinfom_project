@@ -208,11 +208,11 @@
                                             </td>
 
                                             <td class="fw-bold">
-                                                Middle Name
+                                                Middle Initial
                                             </td>
 
                                             <td class="fw-bold">
-                                                Office
+                                                Department
                                             </td>
 
                                             <td class="fw-bold">
@@ -305,13 +305,13 @@
                                         <input type="text" name="official_midname_add" id="official_midname_add" class="form-control">
                                         </div>
                                         <div class="mb-3">
-                                            <label for="office_add" class="col-form-label">Office:</label>
+                                            <label for="office_add" class="col-form-label">Department:</label>
                                             <select name="office_add" class="form-select" id="office_add">
-                                                <option>Barangay Captain</option>
-                                                <option>Barangay Kagawad</option>
-                                                <option>SK Chairperson</option>
-                                                <option>Barangay Secretary</option>
-                                                <option>Barangay Treasurer</option>
+                                                <option>Captain/Admin</option>
+                                                <option>Councilors</option>
+                                                <option>Chairperson</option>
+                                                <option>Secretary</option>
+                                                <option>Treasurer</option>
                                             </select>
                                         </div>
                                         <div class="mb-3">

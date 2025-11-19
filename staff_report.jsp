@@ -4,8 +4,6 @@
 
 <% 
     String action = request.getParameter("action");
-    String year_filter = "";
-    String month_filter = "";
     String status_filter = "";
     String date_start_filter = "";
     String date_end_filter = "";
@@ -18,20 +16,9 @@
     String xfilter = "";
 
     if("search".equals(action)){
-        year_filter = request.getParameter("year_filter");
-        month_filter = request.getParameter("month_filter");
         status_filter = request.getParameter("status_filter");
         date_start_filter = request.getParameter("date_start_filter");
         date_end_filter = request.getParameter("date_end_filter");
-
-        // Year/month filters (optional)
-        if(year_filter != null && !year_filter.isEmpty() && !"All".equals(year_filter)){
-            xfilter += " AND YEAR(latest_dri.date_recorded) = " + year_filter;
-        }
-
-        if(month_filter != null && !month_filter.isEmpty() && !"All".equals(month_filter)){
-            xfilter += " AND MONTH(latest_dri.date_recorded) = " + month_filter;
-        }
 
         // Status filter: Available means either latest repair is Repaired OR no damage record exists
         if(status_filter != null && !status_filter.isEmpty() && !"All".equals(status_filter)){
@@ -42,17 +29,16 @@
             }
         }
 
-        // Date range filters (based on damage_recording_infra.date_recorded)
+        // Date Start / Date End filters (based on damage_repair.date_start and dr.date_end)
         if(date_start_filter != null && !date_start_filter.isEmpty()){
-            xfilter += " AND latest_dri.date_recorded >= '" + date_start_filter + "'";
+            xfilter += " AND dr.date_start >= '" + date_start_filter + "'";
         }
 
         if(date_end_filter != null && !date_end_filter.isEmpty()){
-            xfilter += " AND latest_dri.date_recorded <= '" + date_end_filter + "'";
+            xfilter += " AND dr.date_end <= '" + date_end_filter + "'";
         }
     } else {
-        // no search: do not filter by date or availability by default
-        year_filter = String.valueOf(currentYear);
+        // no search: leave xfilter empty (show all)
     }
 %>
 
@@ -112,37 +98,14 @@
                             <div style="display:flex;flex-direction:row;justify-content:flex-start;width:90%;margin-top:20px">
                                 <div style="display:flex;flex-direction:row;align-items:center">
                                     <div style="font-size:24px">
-                                        Year: 
+                                        Date Start:
                                     </div>
-                                    <select class="form-select" style="margin-left:15px;width:150px" name="year_filter" id="year_filter">
-                                        <option value="All" <%= "All".equals(year_filter) ? "selected" : "" %>>All Years</option>
-                                        <%
-                                            for(int y = currentYear; y >= currentYear - 5; y--) {
-                                        %>
-                                        <option value="<%=y%>" <%= String.valueOf(y).equals(year_filter) ? "selected" : "" %>><%=y%></option>
-                                        <%
-                                            }
-                                        %>
-                                    </select>
+                                    <input type="date" class="form-control" style="margin-left:15px;width:170px" name="date_start_filter" id="date_start_filter" value="<%=date_start_filter%>" />
 
                                     <div style="font-size:24px;margin-left:20px">
-                                        Month:
+                                        Date Completed:
                                     </div>
-                                    <select class="form-select" style="margin-left:15px;width:150px" name="month_filter" id="month_filter">
-                                        <option value="All" <%= "All".equals(month_filter) ? "selected" : "" %>>All Months</option>
-                                        <option value="1" <%= "1".equals(month_filter) ? "selected" : "" %>>January</option>
-                                        <option value="2" <%= "2".equals(month_filter) ? "selected" : "" %>>February</option>
-                                        <option value="3" <%= "3".equals(month_filter) ? "selected" : "" %>>March</option>
-                                        <option value="4" <%= "4".equals(month_filter) ? "selected" : "" %>>April</option>
-                                        <option value="5" <%= "5".equals(month_filter) ? "selected" : "" %>>May</option>
-                                        <option value="6" <%= "6".equals(month_filter) ? "selected" : "" %>>June</option>
-                                        <option value="7" <%= "7".equals(month_filter) ? "selected" : "" %>>July</option>
-                                        <option value="8" <%= "8".equals(month_filter) ? "selected" : "" %>>August</option>
-                                        <option value="9" <%= "9".equals(month_filter) ? "selected" : "" %>>September</option>
-                                        <option value="10" <%= "10".equals(month_filter) ? "selected" : "" %>>October</option>
-                                        <option value="11" <%= "11".equals(month_filter) ? "selected" : "" %>>November</option>
-                                        <option value="12" <%= "12".equals(month_filter) ? "selected" : "" %>>December</option>
-                                    </select>
+                                    <input type="date" class="form-control" style="margin-left:15px;width:170px" name="date_end_filter" id="date_end_filter" value="<%=date_end_filter%>" />
                                     
                                     <div style="font-size:24px;margin-left:20px">
                                         Status:
@@ -156,63 +119,11 @@
                             </div>
 
                             <%
-                                // Summary statistics
-                                Connection conSummary = null;
-                                Statement stSummary = null;
-                                ResultSet rsSummary = null;
-                                int totalStaffAssigned = 0;
-                                int activeRepairs = 0;
-                                int completedRepairs = 0;
+                               
 
-                                try {
-                                    Class.forName("com.mysql.jdbc.Driver");
-                                    conSummary = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                                    stSummary = conSummary.createStatement();
-                                    
-                                    // Count total staff assigned
-                                    String summaryQuery = "SELECT COUNT(DISTINCT dri.stf_id) as total_staff, " +
-                                                         "SUM(CASE WHEN dr.status IN ('For Repair', 'Repairing') THEN 1 ELSE 0 END) as active_repairs, " +
-                                                         "SUM(CASE WHEN dr.status = 'Repaired' THEN 1 ELSE 0 END) as completed_repairs " +
-                                                         "FROM damage_recording_infra dri " +
-                                                         "LEFT JOIN damage_repair dr ON dri.dri_id = dr.dri_id " +
-                                                         "WHERE dri.stf_id IS NOT NULL " + xfilter;
-                                    
-                                    rsSummary = stSummary.executeQuery(summaryQuery);
-                                    if(rsSummary.next()) {
-                                        totalStaffAssigned = rsSummary.getInt("total_staff");
-                                        activeRepairs = rsSummary.getInt("active_repairs");
-                                        completedRepairs = rsSummary.getInt("completed_repairs");
-                                    }
-                                } catch(Exception e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    if(rsSummary != null) try { rsSummary.close(); } catch(Exception e) {}
-                                    if(stSummary != null) try { stSummary.close(); } catch(Exception e) {}
-                                    if(conSummary != null) try { conSummary.close(); } catch(Exception e) {}
-                                }
                             %>
 
-                            <!-- Summary Cards -->
-                            <div class="row" style="width:90%;margin-top:20px">
-                                <div class="col-md-4">
-                                    <div class="summary-card">
-                                        <div class="summary-number"><%=totalStaffAssigned%></div>
-                                        <div class="summary-label">Staff Assigned</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="summary-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                        <div class="summary-number"><%=activeRepairs%></div>
-                                        <div class="summary-label">Active Repairs</div>
-                                    </div>
-                                </div> 
-                                <div class="col-md-4">
-                                    <div class="summary-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                                        <div class="summary-number"><%=completedRepairs%></div>
-                                        <div class="summary-label">Completed Repairs</div>
-                                    </div>
-                                </div>
-                            </div>
+                            
 
                             <div style="width:100%;display:flex;justify-content:center;margin-top:20px;overflow-y:auto;max-height:calc(100vh - 400px)">
                                 <table class="table table-striped" style="width:90%">
