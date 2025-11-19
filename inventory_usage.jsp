@@ -4,7 +4,6 @@
     // Global variables for editing
     int inv_usg_id_edit = 0;
     int dr_id_edit = 0;
-    int inf_id_edit = 0;
     int inv_id_edit = 0;
     String item_name_edit = "";
     int quantity_used_edit = 0;
@@ -14,11 +13,10 @@
     // Handle form actions
     String action = request.getParameter("action");
 
-    if("insert".equals(action))
+        if("insert".equals(action))
     {
         // Get form parameters
         int dr_id = Integer.parseInt(request.getParameter("dr_id_add"));
-        int inf_id = Integer.parseInt(request.getParameter("inf_id_add"));
         int inv_id = Integer.parseInt(request.getParameter("inv_id_add"));
         String quantityStr = request.getParameter("quantity_used_add");
         quantityStr = quantityStr.replaceAll(",", "");
@@ -57,14 +55,13 @@
                 </script>
                 <%
             } else {
-                // Insert usage record
-                pst = con.prepareStatement("INSERT INTO inventory_usage(dr_id, inf_id, inv_id, quantity_used, date_used, category) VALUES(?,?,?,?,?,?)");
+                // Insert usage record (inf_id removed; can be derived from damage_repair)
+                pst = con.prepareStatement("INSERT INTO inventory_usage(dr_id, inv_id, quantity_used, date_used, category) VALUES(?,?,?,?,?)");
                 pst.setInt(1, dr_id);
-                pst.setInt(2, inf_id);
-                pst.setInt(3, inv_id);
-                pst.setInt(4, quantity_used);
-                pst.setString(5, date_used);
-                pst.setString(6, category);
+                pst.setInt(2, inv_id);
+                pst.setInt(3, quantity_used);
+                pst.setString(4, date_used);
+                pst.setString(5, category);
                 pst.executeUpdate();
                 
                 // Update inventory core - deduct the quantity
@@ -108,7 +105,6 @@
             {
                 inv_usg_id_edit = rs.getInt("inv_usg_id");
                 dr_id_edit = rs.getInt("dr_id");
-                inf_id_edit = rs.getInt("inf_id");
                 inv_id_edit = rs.getInt("inv_id");
                 item_name_edit = rs.getString("item_name");
                 quantity_used_edit = rs.getInt("quantity_used");
@@ -136,7 +132,6 @@
     {
         int inv_usg_id = Integer.parseInt(request.getParameter("inv_usg_id_edit"));
         int dr_id = Integer.parseInt(request.getParameter("dr_id_edit"));
-        int inf_id = Integer.parseInt(request.getParameter("inf_id_edit"));
         int inv_id = Integer.parseInt(request.getParameter("inv_id_edit"));
         String quantityStr = request.getParameter("quantity_used_edit");
         quantityStr = quantityStr.replaceAll(",", "");
@@ -189,15 +184,14 @@
                 }
             }
             
-            // Update usage record
-            pst = con.prepareStatement("UPDATE inventory_usage SET dr_id=?, inf_id=?, inv_id=?, quantity_used=?, date_used=?, category=? WHERE inv_usg_id=?");
+            // Update usage record (inf_id removed)
+            pst = con.prepareStatement("UPDATE inventory_usage SET dr_id=?, inv_id=?, quantity_used=?, date_used=?, category=? WHERE inv_usg_id=?");
             pst.setInt(1, dr_id);
-            pst.setInt(2, inf_id);
-            pst.setInt(3, inv_id);
-            pst.setInt(4, new_quantity_used);
-            pst.setString(5, date_used);
-            pst.setString(6, category);
-            pst.setInt(7, inv_usg_id);
+            pst.setInt(2, inv_id);
+            pst.setInt(3, new_quantity_used);
+            pst.setString(4, date_used);
+            pst.setString(5, category);
+            pst.setInt(6, inv_usg_id);
             pst.executeUpdate();
             
             // Adjust inventory (subtract the difference)
@@ -311,7 +305,6 @@
                                     <tr>
                                         <td class="fw-bold">Usage ID</td>
                                         <td class="fw-bold">Damage Repair ID</td>
-                                        <td class="fw-bold">Infrastructure ID</td>
                                         <td class="fw-bold">Item Used</td>
                                         <td class="fw-bold">Category</td>
                                         <td class="fw-bold">Quantity Used</td>
@@ -342,7 +335,6 @@
                                     <tr>
                                         <td><%=inv_usg_id%></td>
                                         <td><%=rs.getInt("dr_id")%></td>
-                                        <td><%=rs.getInt("inf_id")%></td>
                                         <td><%=rs.getString("item_name")%></td>
                                         <td><%=rs.getString("category")%></td>
                                         <td><%=rs.getInt("quantity_used")%> <%=rs.getString("unit_of_measurement")%></td>
@@ -423,37 +415,7 @@
                                     %>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="inf_id_add" class="form-label">Infrastructure</label>
-                                <select class="form-select" id="inf_id_add" name="inf_id_add" required>
-                                    <option value="">Select Infrastructure...</option>
-                                    <%
-                                        Connection con3 = null;
-                                        Statement st3 = null;
-                                        ResultSet rs3 = null;
-                                        try {
-                                            Class.forName("com.mysql.jdbc.Driver");
-                                            con3 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                                            String query3 = "SELECT inf_id, type_of_infra, location, status FROM infrastructure_core ORDER BY location";
-                                            st3 = con3.createStatement();
-                                            rs3 = st3.executeQuery(query3);
-                                            while(rs3.next()) {
-                                    %>
-                                    <option value="<%=rs3.getInt("inf_id")%>">
-                                        <%=rs3.getString("type_of_infra")%> - <%=rs3.getString("location")%> (<%=rs3.getString("status")%>)
-                                    </option>
-                                    <%
-                                            }
-                                        } catch(Exception e) {
-                                            e.printStackTrace();
-                                        } finally {
-                                            if(rs3 != null) rs3.close();
-                                            if(st3 != null) st3.close();
-                                            if(con3 != null) con3.close();
-                                        }
-                                    %>
-                                </select>
-                            </div>
+                            
                             <div class="mb-3">
                                 <label for="inv_id_add" class="form-label">Inventory Item</label>
                                 <select class="form-select" id="inv_id_add" name="inv_id_add" required>
@@ -470,7 +432,7 @@
                                             rs4 = st4.executeQuery(query4);
                                             while(rs4.next()) {
                                     %>
-                                    <option value="<%=rs4.getInt("inv_id")%>">
+                                    <option value="<%=rs4.getInt("inv_id")%>" data-available="<%=rs4.getInt("quantity")%>">
                                         <%=rs4.getString("item_name")%> - <%=rs4.getString("type_of_inventory")%> (<%=rs4.getInt("quantity")%> <%=rs4.getString("unit_of_measurement")%> available)
                                     </option>
                                     <%
@@ -497,6 +459,7 @@
                             <div class="mb-3">
                                 <label for="quantity_used_add" class="form-label">Quantity Used</label>
                                 <input type="number" class="form-control" id="quantity_used_add" name="quantity_used_add" required min="1">
+                                <div id="quantity_error_add" class="form-text text-danger" style="display:none"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="date_used_add" class="form-label">Date Used</label>
@@ -556,37 +519,7 @@
                                     %>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="inf_id_edit" class="form-label">Infrastructure</label>
-                                <select class="form-select" id="inf_id_edit" name="inf_id_edit" required>
-                                    <%
-                                        Connection con6 = null;
-                                        Statement st6 = null;
-                                        ResultSet rs6 = null;
-                                        try {
-                                            Class.forName("com.mysql.jdbc.Driver");
-                                            con6 = DriverManager.getConnection("jdbc:mysql://localhost:3307/ccinfom_project","root","ccinfomgoat9");
-                                            String query6 = "SELECT inf_id, type_of_infra, location, status FROM infrastructure_core ORDER BY location";
-                                            st6 = con6.createStatement();
-                                            rs6 = st6.executeQuery(query6);
-                                            while(rs6.next()) {
-                                                int inf_id_option = rs6.getInt("inf_id");
-                                    %>
-                                    <option value="<%=inf_id_option%>" <%= inf_id_option == inf_id_edit ? "selected" : "" %>>
-                                        <%=rs6.getString("type_of_infra")%> - <%=rs6.getString("location")%> (<%=rs6.getString("status")%>)
-                                    </option>
-                                    <%
-                                            }
-                                        } catch(Exception e) {
-                                            e.printStackTrace();
-                                        } finally {
-                                            if(rs6 != null) rs6.close();
-                                            if(st6 != null) st6.close();
-                                            if(con6 != null) con6.close();
-                                        }
-                                    %>
-                                </select>
-                            </div>
+                            
                             <div class="mb-3">
                                 <label for="inv_id_edit" class="form-label">Inventory Item</label>
                                 <select class="form-select" id="inv_id_edit" name="inv_id_edit" required>
@@ -603,7 +536,7 @@
                                             while(rs7.next()) {
                                                 int inv_id_option = rs7.getInt("inv_id");
                                     %>
-                                    <option value="<%=inv_id_option%>" <%= inv_id_option == inv_id_edit ? "selected" : "" %>>
+                                    <option value="<%=inv_id_option%>" data-available="<%=rs7.getInt("quantity")%>" <%= inv_id_option == inv_id_edit ? "selected" : "" %>>
                                         <%=rs7.getString("item_name")%> - <%=rs7.getString("type_of_inventory")%> (<%=rs7.getInt("quantity")%> <%=rs7.getString("unit_of_measurement")%> available)
                                     </option>
                                     <%
@@ -632,8 +565,9 @@
                             <div class="mb-3">
                                 <label for="quantity_used_edit" class="form-label">Quantity Used</label>
                                 <input type="number" class="form-control" id="quantity_used_edit" 
-                                       name="quantity_used_edit" min="1" 
-                                       value="<%= quantity_used_edit %>" required>
+                                    name="quantity_used_edit" min="1" 
+                                    value="<%= quantity_used_edit %>" required>
+                                <div id="quantity_error_edit" class="form-text text-danger" style="display:none"></div>
                             </div>
 
                             <div class="mb-3">
@@ -651,4 +585,124 @@
         </div>
 
     </body>
+    <script>
+        // Validate quantity against available inventory for Add and Edit forms.
+        function getSelectedAvailable(selectEl) {
+            var opt = selectEl.options[selectEl.selectedIndex];
+            if(!opt) return 0;
+            var a = opt.getAttribute('data-available');
+            return a ? parseInt(a,10) : 0;
+        }
+
+        function showError(elId, msg) {
+            var el = document.getElementById(elId);
+            if(!el) return;
+            el.style.display = msg ? 'block' : 'none';
+            el.textContent = msg || '';
+        }
+
+        function validateInventoryUsage(form, isEdit) {
+            var invSelect = form.querySelector(isEdit ? '#inv_id_edit' : '#inv_id_add');
+            var qtyInput = form.querySelector(isEdit ? '#quantity_used_edit' : '#quantity_used_add');
+            // Require item selection first
+            if(!invSelect || !invSelect.value) {
+                showError(isEdit ? 'quantity_error_edit' : 'quantity_error_add', 'Please select an inventory item first.');
+                if(invSelect) invSelect.focus();
+                return false;
+            }
+            var available = getSelectedAvailable(invSelect);
+            var requested = parseInt(qtyInput.value || '0', 10);
+
+            if(isEdit) {
+                // allow restoring the previously used amount by adding original used
+                var original = parseInt(qtyInput.getAttribute('data-original') || '0', 10);
+                var allowed = available + original;
+                if(requested > allowed) {
+                    showError(isEdit ? 'quantity_error_edit' : 'quantity_error_add', 'Insufficient inventory: available ' + available + ' (you currently used ' + original + '), requested ' + requested + '.');
+                    return false;
+                }
+            } else {
+                if(requested > available) {
+                    showError(isEdit ? 'quantity_error_edit' : 'quantity_error_add', 'Insufficient inventory: available ' + available + ', requested ' + requested + '.');
+                    return false;
+                }
+            }
+
+            showError(isEdit ? 'quantity_error_edit' : 'quantity_error_add', '');
+            return true;
+        }
+
+        // Live validation handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            var addForm = document.querySelector('form[action="inventory_usage.jsp"][method="POST"]');
+            if(addForm) {
+                // attach the submit handler for add form (action=insert)
+                addForm.addEventListener('submit', function(e){
+                    var actionInput = addForm.querySelector('input[name="action"]');
+                    if(actionInput && actionInput.value === 'insert') {
+                        if(!validateInventoryUsage(addForm, false)) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                var qtyAdd = document.getElementById('quantity_used_add');
+                var invAdd = document.getElementById('inv_id_add');
+                if(qtyAdd && invAdd) {
+                    // initial disabled state: disabled until item selected
+                    qtyAdd.disabled = !invAdd.value;
+
+                    // when user focuses quantity while disabled, prompt them to select item
+                    qtyAdd.addEventListener('focus', function(){ if(this.disabled){ showError('quantity_error_add','Please select an inventory item first.'); invAdd.focus(); } });
+
+                    // live validation
+                    qtyAdd.addEventListener('input', function(){ validateInventoryUsage(addForm, false); });
+                    invAdd.addEventListener('change', function(){
+                        // enable or disable quantity based on selection
+                        qtyAdd.disabled = !invAdd.value;
+                        if(invAdd.value) {
+                            showError('quantity_error_add','');
+                        } else {
+                            showError('quantity_error_add','Please select an inventory item first.');
+                        }
+                    });
+                }
+            }
+
+            // Edit form (submitEdit)
+            var editForm = null;
+            var forms = document.querySelectorAll('form[action="inventory_usage.jsp"][method="POST"]');
+            for(var i=0;i<forms.length;i++){
+                var ai = forms[i].querySelector('input[name="action"]');
+                if(ai && ai.value === 'submitEdit') { editForm = forms[i]; break; }
+            }
+            if(editForm) {
+                // store original quantity on the quantity input as data-original
+                var qtyEdit = document.getElementById('quantity_used_edit');
+                if(qtyEdit) {
+                    qtyEdit.setAttribute('data-original', '<%= quantity_used_edit %>');
+                }
+
+                editForm.addEventListener('submit', function(e){
+                    if(!validateInventoryUsage(editForm, true)) {
+                        e.preventDefault();
+                    }
+                });
+
+                var invEdit = document.getElementById('inv_id_edit');
+                if(qtyEdit && invEdit) {
+                    // initial disabled state for edit: enable only if an item is selected
+                    qtyEdit.disabled = !invEdit.value;
+
+                    qtyEdit.addEventListener('focus', function(){ if(this.disabled){ showError('quantity_error_edit','Please select an inventory item first.'); invEdit.focus(); } });
+
+                    qtyEdit.addEventListener('input', function(){ validateInventoryUsage(editForm, true); });
+                    invEdit.addEventListener('change', function(){
+                        qtyEdit.disabled = !invEdit.value;
+                        if(invEdit.value) showError('quantity_error_edit',''); else showError('quantity_error_edit','Please select an inventory item first.');
+                    });
+                }
+            }
+        });
+    </script>
 </html>
